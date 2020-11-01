@@ -22,8 +22,8 @@ class AlienColony : ApplicationAdapter(), InputProcessor {
         batch = SpriteBatch()
 
         map = try {
-            val bts = BTS(Gdx.files.internal("DESERT.BTS").readBytes())
-            val map = MAP(Gdx.files.internal("HUMAN01.MAP").readBytes(), bts)
+            val bts = BTS(Gdx.files.internal("SCENARIO/DESERT.BTS").readBytes())
+            val map = MAP(Gdx.files.internal("SCENARIO/HUMAN/HUMAN01.MAP").readBytes(), bts)
             val image = map.asBitmap()
 
             Texture(image)
