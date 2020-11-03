@@ -1,17 +1,14 @@
 package com.darekbx.aliencolony.characters
 
-import com.badlogic.gdx.Application
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.Texture
-import com.badlogic.gdx.graphics.g2d.Sprite
-import com.badlogic.gdx.graphics.g2d.SpriteBatch
+import com.badlogic.gdx.graphics.g2d.*
+import com.badlogic.gdx.scenes.scene2d.Actor
+import com.badlogic.gdx.utils.Array
 import com.darekbx.aliencolony.dspr.FIN
 import com.darekbx.aliencolony.dspr.SPR
-import com.darekbx.aliencolony.model.AnimationFrame
-import java.util.*
-import kotlin.concurrent.timerTask
 
-class Slug {
+class Slug : Actor() {
 
     companion object {
         val SPRITE_NAME = "SPRITES/SLUG.SPR"
@@ -21,65 +18,64 @@ class Slug {
     private var texture: Texture
     private var sprite: Sprite
 
-    private var animationFrames = mutableListOf<AnimationFrame>()
+    private var slugMove1Animation: Animation<TextureRegion>? = null
+    private var slugMove2Animation: Animation<TextureRegion>? = null
+    var stateTime = 0F
 
-    var animationTimer: Timer? = null
+    var movementMode = true
 
     init {
         val fin = FIN(loadAssetBytes(ANIMATE_NAME))
-        fin.animations.get("SLUGMOVE12")?.frames?.let { frames ->
-            animationFrames = frames
-        }
-
         val spr = SPR(loadAssetBytes(SPRITE_NAME))
         val sprimg = spr.frameAsImage(2, false, false)
         texture = Texture(sprimg)
         sprite = Sprite(texture)
 
-        var index = 0
+        val slugFrames = Array<TextureRegion>()
+        fin.animations.get("SLUGMOVE12")?.frames?.forEach{ frame->
+            val frameImage = spr.frameAsImage(frame.sprFrameNo, frame.isFlipped == 1, false)
+            slugFrames.add(TextureRegion(Texture(frameImage)))
+        }
+        slugMove1Animation = Animation(0.083F, slugFrames)
 
-        animationTimer = Timer().apply {
-            scheduleAtFixedRate(timerTask {
+        val slugFrames2 = Array<TextureRegion>()
+        fin.animations.get("SLUGMOVE0")?.frames?.forEach{ frame->
+            val frameImage = spr.frameAsImage(frame.sprFrameNo, frame.isFlipped == 1, false)
+            slugFrames2.add(TextureRegion(Texture(frameImage)))
+        }
+        slugMove2Animation = Animation(0.083F, slugFrames2)
 
-                val frame = animationFrames.get(index)
+        setPosition(10F, 10F)
+    }
 
-                val sprimg = spr.frameAsImage(frame.sprFrameNo, frame.isFlipped == 1, false)
+    override fun getWidth() = sprite.width
 
-                Gdx.app.postRunnable {
-                    texture = Texture(sprimg)
+    override fun getHeight() = sprite.height
+
+    override fun draw(batch: Batch?, parentAlpha: Float) {
+        stateTime += Gdx.graphics.getDeltaTime()
+        batch?.let {
+            if (movementMode) {
+                slugMove1Animation?.getKeyFrame(stateTime, true)?.let {
+                    batch.draw(it, x, y)
                 }
-
-                if (animationFrames.size <= 1) {
-                    animationTimer?.cancel()
-                    return@timerTask
+            } else {
+                slugMove2Animation?.getKeyFrame(stateTime, true)?.let {
+                    batch.draw(it, x, y)
                 }
-
-                if (++index > animationFrames.size - 1) {
-                    index = 0
-                }
-
-            }, 0, 120)
+            }
         }
     }
 
-    fun draw(batch: SpriteBatch) {
-        sprite.draw(batch)
-    }
-
-    fun setPosition(x: Float, y: Float) {
-        sprite.setPosition(
-                x - sprite.getWidth() / 2,
-                y - sprite.getHeight() / 2
-        )
+    fun changeSprite() {
+        stateTime = 0F
+        //movementMode = !movementMode
     }
 
     fun dispose() {
-        animationTimer?.cancel()
-
         texture.dispose()
     }
 
     private fun loadAssetBytes(assetName: String) =
             Gdx.files.internal(assetName).readBytes()
-
 }
