@@ -1,4 +1,4 @@
-package com.darekbx.aliencolony.characters
+package com.darekbx.aliencolony.actors
 
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.Texture
