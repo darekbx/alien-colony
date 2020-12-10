@@ -8,7 +8,7 @@ import com.darekbx.aliencolony.stages.GameStage
 
 class GameScreen : Screen {
 
-    var gameStage = GameStage(FitViewport(1024F, 762F))
+    var gameStage = GameStage(FitViewport(640F, 480F))
 
     override fun show() {
 
